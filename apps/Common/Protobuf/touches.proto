@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package touches;
+
+message Vector {
+  double x = 1;
+  double y = 2;
+}
+
+message Sample {
+  double time = 1;
+  Vector position = 2;
+  double major_radius = 3;
+}
+
+message Stroke {
+  repeated Sample samples = 1;
+}
+
+message Drawing {
+  repeated Stroke strokes = 1;
+}
+
+message DrawingList {
+  repeated Drawing drawings = 1;
+}
+
+message RawDataSet {
+  DrawingList drawingList = 1;
+  repeated Label labels = 2;
+}
+
+message Image {
+  int32 height = 1;
+  int32 width = 2;
+  bytes values = 15;
+}
+
+message LabelledImage {
+  Image image = 1;
+  Label label = 2;
+}
+
+message TrainingSet {
+  repeated LabelledImage labelledImages = 1;
+}
+
+message ImageList {
+  repeated Image images = 1;
+}
+
+enum Label {
+  OTHER = 0;
+
+  // Common basic symbols
+  CHECKMARK = 1;
+  XMARK = 2;
+
+  // Lines
+  // LINE_VERTICAL = 16;
+  LINE_ASCENDING = 18;
+  SCRIBBLE = 23;
+
+  // Shapes
+  CIRCLE = 24;
+  // TRIANGLE = 25;
+  // SQUARE = 27;
+  SEMICIRCLE_OPEN_UP = 30;
+  // SEMICIRCLE_OPEN_DOWN = 31;
+  // V_OPEN_UP = 34;
+  // V_OPEN_DOWN = 35;
+  HEART = 39;
+
+  // Math
+  PLUS_SIGN = 40;
+  // MINUS_SIGN = 41;
+
+  // Punctuation
+  QUESTION_MARK = 50;
+  // TILDE = 54;
+
+  // Letters and numbers
+  LETTER_A_CAPITAL = 60;
+  LETTER_B_CAPITAL = 61;
+  // LETTER_C_CAPITAL = 62;
+
+  // Faces
+  FACE_HAPPY = 130;
+  FACE_SAD = 131;
+}
