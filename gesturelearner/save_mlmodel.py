@@ -28,7 +28,8 @@ def main(model_in, file_out):
             saver.restore(sess, model_in)
             print('Restored model from file: %s' % model_in)
         except tf.errors.NotFoundError:
-            print('Couldn\'t find model "%s". Training a new model from scratch.' % model_in)
+            print('Couldn\'t find model "%s".' % model_in)
+            return
 
         graph.save_mlmodel(file_out, variables)
 
