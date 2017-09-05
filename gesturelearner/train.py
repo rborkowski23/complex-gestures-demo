@@ -1,6 +1,3 @@
-from gesturelearner.add_mlmodel_to_path import add_mlmodel_to_path
-add_mlmodel_to_path()
-
 import click
 import numpy as np
 import tensorflow as tf

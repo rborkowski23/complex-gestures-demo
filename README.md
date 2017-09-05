@@ -1,3 +1,5 @@
+# Complex Gestures Demo
+
 This project shows how one can use machine learning to enable the recognition of complex gestures in an iOS app. See the article here: [A new approach to touch-based mobile interaction](https://medium.com/@mitochrome/a-new-approach-to-touch-based-mobile-interaction-ba47b14400b0)
 
 The sample data and demo app support 13 gestures which the latter distinguishes with high accuracy: check marks, x marks, ascending diagonals, "scribbles" (rapid side-to-side motion while moving either up or down), circles, U shapes, hearts, plus signs, question marks, capital A, capital B, happy faces and sad faces.
@@ -27,7 +29,8 @@ carthage bootstrap --platform iOS
 If you just want to try out GestureRecognizer, you don't need to train a new model yourself. Otherwise, set up gesturelearner with virtualenv:
 ```
 cd gesturelearner
-virtualenv -p $(which python3) venv
+# Until coremltools supports Python 3, use Python 2.7.
+virtualenv -p $(which python2.7) venv
 pip install -r requirements.txt
 ```
 
@@ -63,7 +66,7 @@ python /path/to/gesturelearner/train.py --test-file=data_filtered_test.tfrecords
 python /path/to/gesturelearner/save_mlmodel.py model.ckpt
 ```
 
-The generated model.mlmodel file can be added to Xcode 11 which will automatically generate a Swift type for using the model. The model used by GestureRecognizer is at `GestureRecognizer/Source/Resources/GestureModel.mlmodel`.
+The generated model.mlmodel file can be added to Xcode 9 which will automatically generate a Swift type for using the model. The model used by GestureRecognizer is at `GestureRecognizer/Source/Resources/GestureModel.mlmodel`.
 
 ## Adding new gesture classes
 

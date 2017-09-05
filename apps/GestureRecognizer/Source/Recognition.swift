@@ -36,8 +36,8 @@ func requiredNumberOfStrokes(label: Touches_Label) -> Int {
 }
 
 /**
- * Convert the `Drawing` into a binary image and use a neural network to compute
- * values ("probabilities") for each gesture label.
+ * Convert the `Drawing` into a grayscale image and use a neural network to
+ * compute values ("probabilities") for each gesture label.
  *
  * - returns: An array that has at each index `i` the value for
  * `Touches_Label.all[i]`. We do not use the raw values of the labels as indexes
@@ -48,6 +48,7 @@ func predictLabel(drawing: Drawing) -> [Double]? {
     let overallStartTime = Date()
     
     let imageStartTime = Date()
+    // Convert the user's gesture ("drawing") into a fixed-size grayscale image.
     guard let array = drawingToGestureModelFormat(drawing) else {
         return nil
     }
@@ -56,6 +57,11 @@ func predictLabel(drawing: Drawing) -> [Double]? {
     let model = GestureModel.shared
     
     let predictionStartTime = Date()
+    // The GestureModel convenience method prediction(image:) wraps our image in
+    // a GestureModelInput instance before passing that to prediction(input:).
+    // Both methods return a GestureModelOutput with our output in the
+    // labelValues property. The names "image" and "labelValues" come from the
+    // names we gave to the inputs and outputs of the .mlmodel when we saved it.
     guard let labelValues = try? model.prediction(image: array).labelValues else {
         return nil
     }
@@ -64,6 +70,7 @@ func predictLabel(drawing: Drawing) -> [Double]? {
     let overallTime = Date().timeIntervalSince(overallStartTime)
     print("timeToGenerateImage=\(timeToGenerateImage) timeToMakePrediction=\(timeToMakePrediction) overallTime=\(overallTime)")
     
+    // Convert the MLMultiArray labelValues into a normal array.
     let dataPointer = labelValues.dataPointer.bindMemory(to: Double.self, capacity: labelValues.count)
     return Array(UnsafeBufferPointer(start: dataPointer, count: labelValues.count))
 }
@@ -85,15 +92,15 @@ func drawingToGestureModelFormat(_ drawing: Drawing) -> MLMultiArray? {
             NSNumber(integerLiteral: Int(image.size.width)),
             NSNumber(integerLiteral: Int(image.size.height))
         ],
-        dataType: .float32
+        dataType: .double
         ) else {
             return nil
     }
     
-    let floatArray = array.dataPointer.bindMemory(to: Float32.self, capacity: array.count)
+    let doubleArray = array.dataPointer.bindMemory(to: Float64.self, capacity: array.count)
     
     for i in 0 ..< array.count {
-        floatArray.advanced(by: i).pointee = Float32(Double(grays[i]) / 255.0)
+        doubleArray.advanced(by: i).pointee = Float64(grays[i]) / 255.0
     }
     
     return array

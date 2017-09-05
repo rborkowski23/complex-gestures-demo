@@ -212,21 +212,19 @@ extension Drawing {
         
         for stroke in fitDrawing.strokes {
             var isFirst = true
-            
+
             for sample in stroke.samples {
                 if isFirst {
                     context.move(to: sample.position)
                 } else {
                     context.addLine(to: sample.position)
                 }
-                
+
                 isFirst = false
             }
-            
-            if !isFirst {
-                context.strokePath()
-            }
         }
+        
+        context.strokePath()
         
         let image = UIGraphicsGetImageFromCurrentImageContext()
         

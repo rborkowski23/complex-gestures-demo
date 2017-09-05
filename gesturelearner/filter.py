@@ -76,7 +76,7 @@ def main(in_file, out_file, merge_file, shuffle, test_fraction, exclude_with_lab
     test_fraction = max(0, min(test_fraction, 1))
 
     example_count = len(filtered_images)
-    test_example_count = round(example_count * test_fraction)
+    test_example_count = int(round(example_count * test_fraction))
 
     if test_example_count > 0:
         [file_name, extension] = os.path.splitext(out_file)
