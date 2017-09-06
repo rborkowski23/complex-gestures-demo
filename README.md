@@ -1,6 +1,8 @@
 # Complex Gestures Demo
 
-This project shows how one can use machine learning to enable the recognition of complex gestures in an iOS app. See the article here: [A new approach to touch-based mobile interaction](https://medium.com/@mitochrome/a-new-approach-to-touch-based-mobile-interaction-ba47b14400b0)
+This project shows how one can use machine learning to enable the recognition of complex gestures in an iOS app. See the articles:
+- [A new approach to touch-based mobile interaction](https://hackernoon.com/a-new-approach-to-touch-based-mobile-interaction-ba47b14400b0)
+- [Smart Gesture Recognition in iOS 11 with Core ML and TensorFlow](https://hackernoon.com/smart-gesture-recognition-in-ios-11-with-core-ml-and-tensorflow-1a0a92c99c51)
 
 The sample data and demo app support 13 gestures which the latter distinguishes with high accuracy: check marks, x marks, ascending diagonals, "scribbles" (rapid side-to-side motion while moving either up or down), circles, U shapes, hearts, plus signs, question marks, capital A, capital B, happy faces and sad faces.
 
