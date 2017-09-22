@@ -15,7 +15,7 @@ import XCTest
 
 extension DelegateProxyTest {
     func test_NSTextFieldDelegateExtension() {
-        performDelegateTest(NSTextFieldSubclass(frame: CGRect.zero))
+        performDelegateTest(NSTextFieldSubclass(frame: CGRect.zero)) { ExtendNSTextFieldDelegateProxy(parentObject: $0) }
     }
 }
 
@@ -24,7 +24,7 @@ extension DelegateProxyTest {
 class ExtendNSTextFieldDelegateProxy
     : RxTextFieldDelegateProxy
     , TestDelegateProtocol {
-    required init(parentObject: AnyObject) {
+    override init(parentObject: ParentObject) {
         super.init(parentObject: parentObject)
     }
 }
@@ -32,19 +32,15 @@ class ExtendNSTextFieldDelegateProxy
 final class NSTextFieldSubclass
     : NSTextField
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxTextFieldDelegateProxy {
-        return ExtendNSTextFieldDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<NSTextField, NSTextFieldDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: NSTextFieldDelegate) -> Disposable {
         return RxTextFieldDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }

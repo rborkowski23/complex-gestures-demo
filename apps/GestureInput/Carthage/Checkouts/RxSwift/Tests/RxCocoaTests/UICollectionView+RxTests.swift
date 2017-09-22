@@ -102,7 +102,8 @@ final class UICollectionViewTests : RxTest {
         var resultIndexPath: IndexPath? = nil
 
         let subscription = collectionView.rx.willDisplayCell
-            .subscribe(onNext: { (cell, indexPath) in
+            .subscribe(onNext: {
+                let (cell, indexPath) = $0
                 resultCell = cell
                 resultIndexPath = indexPath
             })
@@ -125,7 +126,9 @@ final class UICollectionViewTests : RxTest {
         var resultIndexPath: IndexPath? = nil
 
         let subscription = collectionView.rx.willDisplaySupplementaryView
-            .subscribe(onNext: { (reuseableView, elementKind, indexPath) in
+            .subscribe(onNext: {
+                let (reuseableView, elementKind, indexPath) = $0
+
                 resultSupplementaryView = reuseableView
                 resultElementKind = elementKind
                 resultIndexPath = indexPath
@@ -150,7 +153,8 @@ final class UICollectionViewTests : RxTest {
         var resultIndexPath: IndexPath? = nil
 
         let subscription = collectionView.rx.didEndDisplayingCell
-            .subscribe(onNext: { (cell, indexPath) in
+            .subscribe(onNext: {
+                let (cell, indexPath) = $0
                 resultCell = cell
                 resultIndexPath = indexPath
             })
@@ -173,7 +177,8 @@ final class UICollectionViewTests : RxTest {
         var resultIndexPath: IndexPath? = nil
 
         let subscription = collectionView.rx.didEndDisplayingSupplementaryView
-            .subscribe(onNext: { (reuseableView, elementKind, indexPath) in
+            .subscribe(onNext: {
+                let (reuseableView, elementKind, indexPath) = $0
                 resultSupplementaryView = reuseableView
                 resultElementKind = elementKind
                 resultIndexPath = indexPath
@@ -480,7 +485,7 @@ extension UICollectionViewTests {
         }
         let (collectionView, dataSourceSubscription) = createView()
 
-        XCTAssertTrue(collectionView.dataSource === RxCollectionViewDataSourceProxy.proxyForObject(collectionView))
+        XCTAssertTrue(collectionView.dataSource === RxCollectionViewDataSourceProxy.proxy(for: collectionView))
 
         _ = collectionView.rx.sentMessage(#selector(UICollectionView.layoutIfNeeded)).subscribe(onNext: { _ in
             disposeEvents.append("layoutIfNeeded")

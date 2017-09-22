@@ -16,11 +16,11 @@ import XCTest
 
 extension DelegateProxyTest {
     func test_UITableViewDelegateExtension() {
-        performDelegateTest(UITableViewSubclass1(frame: CGRect.zero))
+        performDelegateTest(UITableViewSubclass1(frame: CGRect.zero)) { ExtendTableViewDelegateProxy(parentObject: $0) }
     }
 
     func test_UITableViewDataSourceExtension() {
-        performDelegateTest(UITableViewSubclass2(frame: CGRect.zero))
+        performDelegateTest(UITableViewSubclass2(frame: CGRect.zero)) { ExtendTableViewDataSourceProxy(parentObject: $0) }
     }
 }
 
@@ -28,55 +28,55 @@ extension DelegateProxyTest {
 
     func test_UICollectionViewDelegateExtension() {
         let layout = UICollectionViewFlowLayout()
-        performDelegateTest(UICollectionViewSubclass1(frame: CGRect.zero, collectionViewLayout: layout))
+        performDelegateTest(UICollectionViewSubclass1(frame: CGRect.zero, collectionViewLayout: layout)) { ExtendCollectionViewDelegateProxy(parentObject: $0) }
     }
 
     func test_UICollectionViewDataSourceExtension() {
         let layout = UICollectionViewFlowLayout()
-        performDelegateTest(UICollectionViewSubclass2(frame: CGRect.zero, collectionViewLayout: layout))
+        performDelegateTest(UICollectionViewSubclass2(frame: CGRect.zero, collectionViewLayout: layout)) { ExtendCollectionViewDataSourceProxy(parentObject: $0) }
     }
 }
 
 extension DelegateProxyTest {
     func test_UINavigationControllerDelegateExtension() {
-        performDelegateTest(UINavigationControllerSubclass())
+        performDelegateTest(UINavigationControllerSubclass()) { ExtendNavigationControllerDelegateProxy(parentObject: $0) }
     }
 }
 
 extension DelegateProxyTest {
     func test_UIScrollViewDelegateExtension() {
-        performDelegateTest(UIScrollViewSubclass(frame: CGRect.zero))
+        performDelegateTest(UIScrollViewSubclass(frame: CGRect.zero)) { ExtendScrollViewDelegateProxy(parentObject: $0) }
     }
 }
 
 #if os(iOS)
 extension DelegateProxyTest {
     func test_UISearchBarDelegateExtension() {
-        performDelegateTest(UISearchBarSubclass(frame: CGRect.zero))
+        performDelegateTest(UISearchBarSubclass(frame: CGRect.zero)) { ExtendSearchBarDelegateProxy(parentObject: $0) }
     }
 }
 #endif
 
 extension DelegateProxyTest {
     func test_UITextViewDelegateExtension() {
-        performDelegateTest(UITextViewSubclass(frame: CGRect.zero))
+        performDelegateTest(UITextViewSubclass(frame: CGRect.zero)) { ExtendTextViewDelegateProxy(parentObject: $0) }
     }
 }
 
 #if os(iOS)
 extension DelegateProxyTest {
     func test_UISearchController() {
-        performDelegateTest(UISearchControllerSubclass())
+        performDelegateTest(UISearchControllerSubclass()) { ExtendSearchControllerDelegateProxy(parentObject: $0) }
     }
 }
     
 extension DelegateProxyTest {
     func test_UIPickerViewExtension() {
-        performDelegateTest(UIPickerViewSubclass(frame: CGRect.zero))
+        performDelegateTest(UIPickerViewSubclass(frame: CGRect.zero)) { ExtendPickerViewDelegateProxy(parentObject: $0) }
     }
     
     func test_UIPickerViewDataSourceExtension() {
-        performDelegateTest(UIPickerViewSubclass2(frame: CGRect.zero))
+        performDelegateTest(UIPickerViewSubclass2(frame: CGRect.zero)) { ExtendPickerViewDataSourceProxy(parentObject: $0) }
     }
 }
 #endif
@@ -84,20 +84,20 @@ extension DelegateProxyTest {
 #if os(iOS)
 extension DelegateProxyTest {
     func test_UIWebViewDelegateExtension() {
-        performDelegateTest(UIWebViewSubclass(frame: CGRect.zero))
+        performDelegateTest(UIWebViewSubclass(frame: CGRect.zero)) { ExtendWebViewDelegateProxy(parentObject: $0) }
     }
 }
 #endif
 
 extension DelegateProxyTest {
     func test_UITabBarControllerDelegateExtension() {
-        performDelegateTest(UITabBarControllerSubclass())
+        performDelegateTest(UITabBarControllerSubclass()) { ExtendTabBarControllerDelegateProxy(parentObject: $0) }
     }
 }
 
 extension DelegateProxyTest {
     func test_UITabBarDelegateExtension() {
-        performDelegateTest(UITabBarSubclass())
+        performDelegateTest(UITabBarSubclass()) { ExtendTabBarDelegateProxy(parentObject: $0) }
     }
 }
 
@@ -115,8 +115,8 @@ final class ExtendTableViewDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UITableViewSubclass1?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UITableViewSubclass1)
+    override init(parentObject: UITableView) {
+        self.control = parentObject as? UITableViewSubclass1
         super.init(parentObject: parentObject)
     }
 }
@@ -124,19 +124,15 @@ final class ExtendTableViewDelegateProxy
 final class UITableViewSubclass1
     : UITableView
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxScrollViewDelegateProxy {
-        return ExtendTableViewDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIScrollView, UIScrollViewDelegate> {
         return self.rx.delegate
     }
     
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIScrollViewDelegate) -> Disposable {
         return RxScrollViewDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -146,8 +142,8 @@ final class ExtendTableViewDataSourceProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UITableViewSubclass2?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UITableViewSubclass2)
+ init(parentObject: UITableViewSubclass2) {
+        self.control = parentObject
         super.init(parentObject: parentObject)
     }
 }
@@ -155,21 +151,17 @@ final class ExtendTableViewDataSourceProxy
 final class UITableViewSubclass2
     : UITableView
     , TestDelegateControl {
-    override func createRxDataSourceProxy() -> RxTableViewDataSourceProxy {
-        return ExtendTableViewDataSourceProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         if dataSource != nil {
             (dataSource as! TestDelegateProtocol).testEventHappened?(value)
         }
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UITableView, UITableViewDataSource> {
         return self.rx.dataSource
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UITableViewDataSource) -> Disposable {
         return RxTableViewDataSourceProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -179,8 +171,8 @@ final class ExtendCollectionViewDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UICollectionViewSubclass1?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UICollectionViewSubclass1)
+    init(parentObject: UICollectionViewSubclass1) {
+        self.control = parentObject
         super.init(parentObject: parentObject)
     }
 }
@@ -188,19 +180,15 @@ final class ExtendCollectionViewDelegateProxy
 final class UICollectionViewSubclass1
     : UICollectionView
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxScrollViewDelegateProxy {
-        return ExtendCollectionViewDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIScrollView, UIScrollViewDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIScrollViewDelegate) -> Disposable {
         return RxScrollViewDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -210,8 +198,8 @@ final class ExtendCollectionViewDataSourceProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UICollectionViewSubclass2?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UICollectionViewSubclass2)
+    init(parentObject: UICollectionViewSubclass2) {
+        self.control = parentObject
         super.init(parentObject: parentObject)
     }
 }
@@ -219,9 +207,6 @@ final class ExtendCollectionViewDataSourceProxy
 final class UICollectionViewSubclass2
     : UICollectionView
     , TestDelegateControl {
-    override func createRxDataSourceProxy() -> RxCollectionViewDataSourceProxy {
-        return ExtendCollectionViewDataSourceProxy(parentObject: self)
-    }
 
     func doThatTest(_ value: Int) {
         if dataSource != nil {
@@ -229,11 +214,11 @@ final class UICollectionViewSubclass2
         }
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UICollectionView, UICollectionViewDataSource> {
         return self.rx.dataSource
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UICollectionViewDataSource) -> Disposable {
         return RxCollectionViewDataSourceProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -243,8 +228,8 @@ final class ExtendScrollViewDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UIScrollViewSubclass?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UIScrollViewSubclass)
+    override init(parentObject: ParentObject) {
+        self.control = parentObject as? UIScrollViewSubclass
         super.init(parentObject: parentObject)
     }
 }
@@ -252,19 +237,15 @@ final class ExtendScrollViewDelegateProxy
 final class UIScrollViewSubclass
     : UIScrollView
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxScrollViewDelegateProxy {
-        return ExtendScrollViewDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIScrollView, UIScrollViewDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIScrollViewDelegate) -> Disposable {
         return RxScrollViewDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -275,8 +256,8 @@ final class ExtendSearchBarDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UISearchBarSubclass?
     
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UISearchBarSubclass)
+    override init(parentObject: ParentObject) {
+        self.control = parentObject as? UISearchBarSubclass
         super.init(parentObject: parentObject)
     }
 }
@@ -284,20 +265,15 @@ final class ExtendSearchBarDelegateProxy
 final class UISearchBarSubclass
     : UISearchBar
     , TestDelegateControl {
-    
-    override func createRxDelegateProxy() -> RxSearchBarDelegateProxy {
-        return ExtendSearchBarDelegateProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UISearchBar, UISearchBarDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UISearchBarDelegate) -> Disposable {
         return RxSearchBarDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -308,8 +284,8 @@ final class ExtendTextViewDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UITextViewSubclass?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UITextViewSubclass)
+ init(parentObject: UITextViewSubclass) {
+        self.control = parentObject
         super.init(parentObject: parentObject)
     }
 }
@@ -317,19 +293,15 @@ final class ExtendTextViewDelegateProxy
 final class UITextViewSubclass
     : UITextView
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxScrollViewDelegateProxy {
-        return ExtendTextViewDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIScrollView, UIScrollViewDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIScrollViewDelegate) -> Disposable {
         return RxScrollViewDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -337,7 +309,7 @@ final class UITextViewSubclass
 final class ExtendSearchControllerDelegateProxy
     : RxSearchControllerDelegateProxy
     , TestDelegateProtocol {
-    required init(parentObject: AnyObject) {
+    override init(parentObject: ParentObject) {
         super.init(parentObject: parentObject)
     }
 }
@@ -345,20 +317,15 @@ final class ExtendSearchControllerDelegateProxy
 final class UISearchControllerSubclass
     : UISearchController
     , TestDelegateControl {
-
-    override func createRxDelegateProxy() -> RxSearchControllerDelegateProxy {
-        return ExtendSearchControllerDelegateProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UISearchController, UISearchControllerDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UISearchControllerDelegate) -> Disposable {
         return RxSearchControllerDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -367,7 +334,7 @@ final class UISearchControllerSubclass
 final class ExtendPickerViewDelegateProxy
     : RxPickerViewDelegateProxy
     , TestDelegateProtocol {
-    required init(parentObject: AnyObject) {
+    override init(parentObject: ParentObject) {
         super.init(parentObject: parentObject)
     }
 }
@@ -375,20 +342,15 @@ final class ExtendPickerViewDelegateProxy
 final class UIPickerViewSubclass
     : UIPickerView
     , TestDelegateControl {
-
-    public override func createRxDelegateProxy() -> RxPickerViewDelegateProxy {
-        return ExtendPickerViewDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIPickerView, UIPickerViewDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIPickerViewDelegate) -> Disposable {
         return RxPickerViewDelegateProxy.installForwardDelegate(testDelegate,
                                                                 retainDelegate: false,
                                                                 onProxyForObject: self)
@@ -400,28 +362,24 @@ final class ExtendPickerViewDataSourceProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UIPickerViewSubclass2?
         
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UIPickerViewSubclass2)
+    init(parentObject: UIPickerViewSubclass2) {
+        self.control = parentObject
         super.init(parentObject: parentObject)
     }
 }
     
 final class UIPickerViewSubclass2: UIPickerView, TestDelegateControl {
-    override func createRxDataSourceProxy() -> RxPickerViewDataSourceProxy {
-        return ExtendPickerViewDataSourceProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         if dataSource != nil {
             (dataSource as! TestDelegateProtocol).testEventHappened?(value)
         }
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIPickerView, UIPickerViewDataSource> {
         return self.rx.dataSource
     }
     
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIPickerViewDataSource) -> Disposable {
         return RxPickerViewDataSourceProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
@@ -429,26 +387,21 @@ final class UIPickerViewSubclass2: UIPickerView, TestDelegateControl {
 final class ExtendWebViewDelegateProxy
     : RxWebViewDelegateProxy
     , TestDelegateProtocol {
-    required init(parentObject: AnyObject) {
+    override init(parentObject: ParentObject) {
         super.init(parentObject: parentObject)
     }
 }
 
 final class UIWebViewSubclass: UIWebView, TestDelegateControl {
-
-    override func createRxDelegateProxy() -> RxWebViewDelegateProxy {
-        return ExtendWebViewDelegateProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UIWebView, UIWebViewDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UIWebViewDelegate) -> Disposable {
         return RxWebViewDelegateProxy.installForwardDelegate(testDelegate,
                                                              retainDelegate: false,
                                                              onProxyForObject: self)
@@ -464,7 +417,7 @@ final class ExtendTextStorageDelegateProxy
     : RxTextStorageDelegateProxy
     , TestDelegateProtocol {
 
-    required init(parentObject: AnyObject) {
+    override init(parentObject: ParentObject) {
         super.init(parentObject: parentObject)
     }
 }
@@ -472,21 +425,16 @@ final class ExtendTextStorageDelegateProxy
 final class NSTextStorageSubclass
     : NSTextStorage
     , TestDelegateControl {
-
-    override func createRxDelegateProxy() -> RxTextStorageDelegateProxy {
-        return ExtendTextStorageDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<NSTextStorage, NSTextStorageDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
-        return RxScrollViewDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
+    func setMineForwardDelegate(_ testDelegate: NSTextStorageDelegate) -> Disposable {
+        return RxTextStorageDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
 
@@ -495,8 +443,8 @@ final class ExtendNavigationControllerDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UINavigationControllerSubclass?
 
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UINavigationControllerSubclass)
+    override init(parentObject: ParentObject) {
+        self.control = parentObject as? UINavigationControllerSubclass
         super.init(parentObject: parentObject)
     }
 }
@@ -506,8 +454,8 @@ final class ExtendTabBarControllerDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UITabBarControllerSubclass?
     
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UITabBarControllerSubclass)
+    override init(parentObject: ParentObject) {
+        self.control = parentObject as? UITabBarControllerSubclass
         super.init(parentObject: parentObject)
     }
 }
@@ -517,26 +465,22 @@ final class ExtendTabBarDelegateProxy
     , TestDelegateProtocol {
     weak fileprivate(set) var control: UITabBarSubclass?
     
-    required init(parentObject: AnyObject) {
-        self.control = (parentObject as! UITabBarSubclass)
+    override init(parentObject: ParentObject) {
+        self.control = parentObject as? UITabBarSubclass
         super.init(parentObject: parentObject)
     }
 }
 
 final class UINavigationControllerSubclass: UINavigationController, TestDelegateControl {
-    override func createRxDelegateProxy() -> RxNavigationControllerDelegateProxy {
-        return ExtendNavigationControllerDelegateProxy(parentObject: self)
-    }
-
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
 
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UINavigationController, UINavigationControllerDelegate> {
         return self.rx.delegate
     }
 
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UINavigationControllerDelegate) -> Disposable {
         return RxNavigationControllerDelegateProxy.installForwardDelegate(testDelegate,
                                                                           retainDelegate: false,
                                                                           onProxyForObject: self)
@@ -546,37 +490,29 @@ final class UINavigationControllerSubclass: UINavigationController, TestDelegate
 final class UITabBarControllerSubclass
     : UITabBarController
     , TestDelegateControl {
-    override func createRxDelegateProxy() -> RxTabBarControllerDelegateProxy {
-        return ExtendTabBarControllerDelegateProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UITabBarController, UITabBarControllerDelegate> {
         return self.rx.delegate
     }
     
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UITabBarControllerDelegate) -> Disposable {
         return RxTabBarControllerDelegateProxy.installForwardDelegate(testDelegate, retainDelegate: false, onProxyForObject: self)
     }
 }
 
 final class UITabBarSubclass: UITabBar, TestDelegateControl {
-    override func createRxDelegateProxy() -> RxTabBarDelegateProxy {
-        return ExtendTabBarDelegateProxy(parentObject: self)
-    }
-    
     func doThatTest(_ value: Int) {
         (delegate as! TestDelegateProtocol).testEventHappened?(value)
     }
     
-    var delegateProxy: DelegateProxy {
+    var delegateProxy: DelegateProxy<UITabBar, UITabBarDelegate> {
         return self.rx.delegate
     }
     
-    func setMineForwardDelegate(_ testDelegate: TestDelegateProtocol) -> Disposable {
+    func setMineForwardDelegate(_ testDelegate: UITabBarDelegate) -> Disposable {
         return RxTabBarDelegateProxy.installForwardDelegate(testDelegate,
                                                             retainDelegate: false,
                                                             onProxyForObject: self)
